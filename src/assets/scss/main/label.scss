@@ -1,0 +1,40 @@
+.label-card-container {
+  max-height: 88vh;
+  margin-left: 30px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-areas: "1 1 1";
+  grid-gap: 1rem;
+  .delete {
+    position: relative;
+    margin: 10px auto;
+    text-align: right;
+    .delete-icon {
+      padding: 0px 20px;
+      font-weight: bolder;
+      cursor: pointer;
+      &:hover {
+        color: crimson;
+      }
+    }
+  }
+  .card-color {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: black;
+    width: 20px;
+    height: 20px;
+  }
+  p {
+    margin-bottom: 5px;
+  }
+  .ant-card-grid {
+    padding: 10px;
+  }
+}
