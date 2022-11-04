@@ -76,7 +76,7 @@ export default {
       type: Object,
     },
   },
-  emits: ["addRect", "clearRect", "removeRect", "updateRect"],
+  emits: ["addRect", "clearRect", "removeRect", "updateRect", "selectBox"],
   setup(props, { emit }) {
     let rectList = computed(() => props.myList);
 
@@ -123,10 +123,10 @@ export default {
         canvas.value.height
       );
 
-      rectList.value.forEach((item, index) => {
-        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+      for (let i = 0; i < rectList.value.length; i++) {
+        const { color, S_X, S_Y, E_X, E_Y, id } = rectList.value[i];
         if (grabUpdatePoint.value === id) {
-          return;
+          continue;
         }
         context.strokeStyle = color;
         context.strokeRect(
@@ -135,7 +135,18 @@ export default {
           (E_X - S_X) * canvas.value.width,
           (E_Y - S_Y) * canvas.value.height
         );
-      });
+      }
+
+      if (!_.isEmpty(targetBox.value)) {
+        const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
+        context.strokeStyle = color;
+        context.strokeRect(
+          S_X * canvas.value.width,
+          S_Y * canvas.value.height,
+          (E_X - S_X) * canvas.value.width,
+          (E_Y - S_Y) * canvas.value.height
+        );
+      }
     }
 
     // 이미지 업로드
@@ -205,6 +216,7 @@ export default {
 
         if (x >= S_X && x <= E_X) {
           if (y >= S_Y && y <= E_Y) {
+            emit("selectBox", id);
             return id;
           }
         }
@@ -468,7 +480,6 @@ export default {
       const context = canvas.value.getContext("2d");
 
       const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
-      console.log(color, S_X, S_Y, E_X, E_Y);
       context.strokeStyle = color;
       context.strokeRect(
         S_X * canvas.value.width,

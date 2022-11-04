@@ -27,14 +27,25 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: black;
-    width: 20px;
-    height: 20px;
+    cursor: pointer;
   }
   p {
     margin-bottom: 5px;
   }
   .ant-card-grid {
     padding: 10px;
+  }
+
+  input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 25px;
+    height: 25px;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  input[type="color"]::-webkit-color-swatch {
+    border: none;
   }
 }

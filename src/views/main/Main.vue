@@ -6,18 +6,21 @@
       @clearRect="clearRect"
       @removeRect="removeRect"
       @updateRect="updateRect"
+      @selectBox="selectBox"
       :box="targetBox"
     />
     <LabelCardList
       :myList="rectList"
       @removeRect="removeRect"
       @selectBox="selectBox"
+      @changeColor="changeColor"
     />
+    <input type="color" />
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import ImageLoad from "./components/ImageLoad.vue";
 import LabelCardList from "./components/LabelCardList.vue";
 
@@ -36,6 +39,9 @@ export default {
   setup() {
     const rectList = ref([]);
     const targetBox = ref({});
+    watch(targetBox, () => {
+      targetBox.value = {};
+    });
 
     const addRect = (data) => {
       rectList.value.unshift(data);
@@ -63,6 +69,20 @@ export default {
       targetBox.value = _.find(rectList.value, { id: id });
     };
 
+    const changeColor = (id, color) => {
+      rectList.value = rectList.value.map((item) => {
+        if (item.id === id) {
+          console.log(color);
+          return {
+            ...item,
+            color,
+          };
+        } else {
+          return item;
+        }
+      });
+    };
+
     return {
       rectList,
       addRect,
@@ -71,6 +91,7 @@ export default {
       updateRect,
       selectBox,
       targetBox,
+      changeColor,
     };
   },
 };

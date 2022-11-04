@@ -6,10 +6,16 @@
       @click="selectBox(item.id)"
     >
       <div class="delete">
-        <div
-          class="card-color"
+        <!-- <div
+          
           :style="`background-color: ${item.color}`"
-        ></div>
+        ></div> -->
+        <input
+          class="card-color"
+          type="color"
+          :value="item.color"
+          @input="(e) => changeColor(item.id, e)"
+        />
         <span class="delete-icon" @click="removeRect(item.id)">X</span>
       </div>
 
@@ -42,7 +48,7 @@ export default {
       type: Array,
     },
   },
-  emits: ["removeRect", "selectBox"],
+  emits: ["removeRect", "selectBox", "changeColor"],
   setup(props, { emit }) {
     const store = useStore();
     const colorList = computed(() => store.state.colorList);
@@ -57,11 +63,17 @@ export default {
       emit("selectBox", id);
     };
 
+    const changeColor = (id, event) => {
+      // console.log();
+      emit("changeColor", id, event.currentTarget.value);
+    };
+
     return {
       rectList,
       colorList,
       removeRect,
       selectBox,
+      changeColor,
     };
   },
 };

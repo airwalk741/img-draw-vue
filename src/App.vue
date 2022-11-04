@@ -11,15 +11,17 @@ export default {
 
     const makeColor = () => {
       const color = [];
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 500; i++) {
         while (true) {
           /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
-          const r = parseInt(Math.random() * 255);
-          const g = parseInt(Math.random() * 255);
-          const b = parseInt(Math.random() * 255);
-          const candidate = `rgba(${r}, ${g}, ${b})`;
-          if (!color.includes(candidate)) {
-            color.push(candidate);
+          const colorCode =
+            "#" + Math.round(Math.random() * 0xffffff).toString(16);
+          // const r = parseInt(Math.random() * 255);
+          // const g = parseInt(Math.random() * 255);
+          // const b = parseInt(Math.random() * 255);
+          // const candidate = `rgba(${r}, ${g}, ${b})`;
+          if (!color.includes(colorCode)) {
+            color.push(colorCode);
             break;
           }
         }
