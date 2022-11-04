@@ -15,7 +15,6 @@
       @selectBox="selectBox"
       @changeColor="changeColor"
     />
-    <input type="color" />
   </div>
 </template>
 
@@ -49,10 +48,16 @@ export default {
     };
 
     const clearRect = () => {
+      targetBox.value = {};
       rectList.value = [];
     };
 
     const removeRect = (id) => {
+      if (!_.isEmpty(targetBox)) {
+        if (targetBox.value.id === id) {
+          targetBox.value = {};
+        }
+      }
       rectList.value = rectList.value.filter((item) => item.id !== id);
     };
 
@@ -64,6 +69,11 @@ export default {
           return item;
         }
       });
+      if (!_.isEmpty(targetBox)) {
+        if (targetBox.value.id === id) {
+          targetBox.value = data;
+        }
+      }
     };
 
     const selectBox = (id) => {
@@ -73,7 +83,6 @@ export default {
     const changeColor = (id, color) => {
       rectList.value = rectList.value.map((item) => {
         if (item.id === id) {
-          console.log(color);
           return {
             ...item,
             color,

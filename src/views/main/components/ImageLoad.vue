@@ -55,6 +55,7 @@
         @dragover.prevent
         @drop.prevent="onDrop"
         :style="`cursor: ${isgrabUpdatePoint}`"
+        @contextMenu="() => console.log('test')"
       ></canvas>
     </div>
   </div>
@@ -106,6 +107,7 @@ export default {
     };
 
     function onDrop(event) {
+      clearRect();
       const items = event.dataTransfer.files;
       targetFile.value = items[0];
     }
@@ -113,6 +115,7 @@ export default {
     //
     let colorIndex = 0;
     function ImagePrinting() {
+      if (!imageLoad.value) return;
       const context = canvas.value.getContext("2d");
       context.clearRect(0, 0, canvas.value.width, canvas.value.height);
       context.drawImage(
@@ -138,14 +141,16 @@ export default {
       }
 
       if (!_.isEmpty(targetBox.value)) {
-        const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
-        context.strokeStyle = color;
-        context.strokeRect(
-          S_X * canvas.value.width,
-          S_Y * canvas.value.height,
-          (E_X - S_X) * canvas.value.width,
-          (E_Y - S_Y) * canvas.value.height
-        );
+        if (grabUpdatePoint.value === null) {
+          const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
+          context.strokeStyle = color;
+          context.strokeRect(
+            S_X * canvas.value.width,
+            S_Y * canvas.value.height,
+            (E_X - S_X) * canvas.value.width,
+            (E_Y - S_Y) * canvas.value.height
+          );
+        }
       }
     }
 
@@ -208,11 +213,31 @@ export default {
       );
     }
 
+    // x, y 좌표 큰값 혼동 막기
+    // 좌하를 잡고 수정을 하면 start_x의 좌상의 x값이 들어감 => 큰값이 들어간다는 의미
+    // 그러면 hoverEdgePointer, findMoveBoxTarget의 if문이 이상하게 바뀜
+    function bigValue(a, b) {
+      if (a > b) {
+        return [a, b];
+      } else {
+        return [b, a];
+      }
+    }
+
     // 이동하고자 하는 박스 찾기
     function findMoveBoxTarget(x, y) {
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+        let { color, S_X, S_Y, E_X, E_Y, id } = item;
+
+        let [a, b] = bigValue(S_X, E_X);
+
+        S_X = b;
+        E_X = a;
+
+        [a, b] = bigValue(S_Y, E_Y);
+        S_Y = b;
+        E_Y = a;
 
         if (x >= S_X && x <= E_X) {
           if (y >= S_Y && y <= E_Y) {
@@ -338,9 +363,9 @@ export default {
           grabUpdatePoint.value = null;
         } else {
           emit("addRect", data);
+          colorIndex += 1;
         }
 
-        colorIndex += 1;
         start_x.value = -1;
         start_y.value = -1;
         end_x.value = -1;
@@ -364,12 +389,12 @@ export default {
 
     function pointerGrab(x, y, target_x, target_y) {
       if (
-        target_x - 20 / canvas.value.width <= x &&
-        x <= target_x + 20 / canvas.value.height
+        target_x - 5 / canvas.value.width <= x &&
+        x <= target_x + 5 / canvas.value.height
       ) {
         if (
-          target_y - 20 / canvas.value.width <= y &&
-          y <= target_y + 20 / canvas.value.height
+          target_y - 5 / canvas.value.width <= y &&
+          y <= target_y + 5 / canvas.value.height
         ) {
           return true;
         }
@@ -387,7 +412,16 @@ export default {
 
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+        let { color, S_X, S_Y, E_X, E_Y, id } = item;
+
+        let [a, b] = bigValue(S_X, E_X);
+
+        S_X = b;
+        E_X = a;
+
+        [a, b] = bigValue(S_Y, E_Y);
+        S_Y = b;
+        E_Y = a;
 
         // 좌상
         const leftHeight = pointerGrab(x, y, S_X, S_Y);
@@ -478,6 +512,8 @@ export default {
     watch(targetBox, () => {
       if (_.isEmpty(targetBox.value)) return;
       const context = canvas.value.getContext("2d");
+
+      if (grabUpdatePoint.value !== null) return;
 
       const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
       context.strokeStyle = color;

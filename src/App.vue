@@ -9,13 +9,24 @@ export default {
   setup() {
     const store = useStore();
 
+    function getRandomColor() {
+      var letters = "0123456789ABCDEF";
+      var color = "#";
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
     const makeColor = () => {
       const color = [];
       for (let i = 0; i < 500; i++) {
         while (true) {
           /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
-          const colorCode =
-            "#" + Math.round(Math.random() * 0xffffff).toString(16);
+
+          const colorCode = getRandomColor();
+          // "#" + Math.round(Math.random() * 0xffffff).toString(16);
+
           // const r = parseInt(Math.random() * 255);
           // const g = parseInt(Math.random() * 255);
           // const b = parseInt(Math.random() * 255);
