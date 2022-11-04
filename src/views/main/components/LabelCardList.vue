@@ -1,6 +1,10 @@
 <template>
   <div class="label-card-container">
-    <a-card v-for="(item, index) in rectList" :key="index">
+    <a-card
+      v-for="(item, index) in rectList"
+      :key="index"
+      @click="selectBox(item.id)"
+    >
       <div class="delete">
         <div
           class="card-color"
@@ -38,7 +42,7 @@ export default {
       type: Array,
     },
   },
-  emits: ["removeRect"],
+  emits: ["removeRect", "selectBox"],
   setup(props, { emit }) {
     const store = useStore();
     const colorList = computed(() => store.state.colorList);
@@ -49,10 +53,15 @@ export default {
       emit("removeRect", id);
     };
 
+    const selectBox = (id) => {
+      emit("selectBox", id);
+    };
+
     return {
       rectList,
       colorList,
       removeRect,
+      selectBox,
     };
   },
 };

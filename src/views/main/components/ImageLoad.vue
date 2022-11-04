@@ -72,6 +72,9 @@ export default {
     myList: {
       type: Array,
     },
+    box: {
+      type: Object,
+    },
   },
   emits: ["addRect", "clearRect", "removeRect", "updateRect"],
   setup(props, { emit }) {
@@ -79,6 +82,7 @@ export default {
 
     const store = useStore();
     const colorList = computed(() => store.state.colorList);
+    const targetBox = computed(() => props.box);
 
     const isover = ref(false); // file upload 할때 박스안에 오버되는지
     const canvas = ref(null);
@@ -458,6 +462,21 @@ export default {
       grabUpdatePoint.value = null;
       return false;
     }
+
+    watch(targetBox, () => {
+      if (_.isEmpty(targetBox.value)) return;
+      const context = canvas.value.getContext("2d");
+
+      const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
+      console.log(color, S_X, S_Y, E_X, E_Y);
+      context.strokeStyle = color;
+      context.strokeRect(
+        S_X * canvas.value.width,
+        S_Y * canvas.value.height,
+        (E_X - S_X) * canvas.value.width,
+        (E_Y - S_Y) * canvas.value.height
+      );
+    });
 
     return {
       uploadImg,

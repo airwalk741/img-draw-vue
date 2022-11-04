@@ -6,8 +6,13 @@
       @clearRect="clearRect"
       @removeRect="removeRect"
       @updateRect="updateRect"
+      :box="targetBox"
     />
-    <LabelCardList :myList="rectList" @removeRect="removeRect" />
+    <LabelCardList
+      :myList="rectList"
+      @removeRect="removeRect"
+      @selectBox="selectBox"
+    />
   </div>
 </template>
 
@@ -15,6 +20,8 @@
 import { ref } from "vue";
 import ImageLoad from "./components/ImageLoad.vue";
 import LabelCardList from "./components/LabelCardList.vue";
+
+import _ from "lodash";
 
 // rectList = [
 //   startX, startY, 가로길이, 세로길이
@@ -27,14 +34,14 @@ export default {
   },
 
   setup() {
-    let rectList = ref([]);
+    const rectList = ref([]);
+    const targetBox = ref({});
 
     const addRect = (data) => {
       rectList.value.unshift(data);
     };
 
     const clearRect = () => {
-      console.log("care");
       rectList.value = [];
     };
 
@@ -52,12 +59,18 @@ export default {
       });
     };
 
+    const selectBox = (id) => {
+      targetBox.value = _.find(rectList.value, { id: id });
+    };
+
     return {
       rectList,
       addRect,
       clearRect,
       removeRect,
       updateRect,
+      selectBox,
+      targetBox,
     };
   },
 };
