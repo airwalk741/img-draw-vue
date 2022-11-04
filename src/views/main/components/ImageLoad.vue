@@ -54,6 +54,7 @@
         @mouseup="mouseup"
         @dragover.prevent
         @drop.prevent="onDrop"
+        :style="`cursor: ${isgrabUpdatePoint}`"
       ></canvas>
     </div>
   </div>
@@ -72,7 +73,7 @@ export default {
       type: Array,
     },
   },
-  emits: ["addRect", "clearRect", "removeRect"],
+  emits: ["addRect", "clearRect", "removeRect", "updateRect"],
   setup(props, { emit }) {
     let rectList = computed(() => props.myList);
 
@@ -100,11 +101,10 @@ export default {
       isover.value = data;
     };
 
-    const onDrop = (event) => {
+    function onDrop(event) {
       const items = event.dataTransfer.files;
-      console.log(items);
       targetFile.value = items[0];
-    };
+    }
 
     //
     let colorIndex = 0;
@@ -120,7 +120,10 @@ export default {
       );
 
       rectList.value.forEach((item, index) => {
-        const { color, S_X, S_Y, E_X, E_Y } = item;
+        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+        if (grabUpdatePoint.value === id) {
+          return;
+        }
         context.strokeStyle = color;
         context.strokeRect(
           S_X * canvas.value.width,
@@ -132,14 +135,14 @@ export default {
     }
 
     // 이미지 업로드
-    const loadImageFile = () => {
+    function loadImageFile() {
       const imgSrc = URL.createObjectURL(targetFile.value);
       imageLoad.value = new Image();
       imageLoad.value.src = imgSrc;
       imageLoad.value.onload = () => {
         ImagePrinting();
       };
-    };
+    }
 
     watch(targetFile, () => {
       loadImageFile();
@@ -151,43 +154,47 @@ export default {
     const end_y = ref(0);
 
     // x 좌표
-    const canvasX = (clientX) => {
+    function canvasX(clientX) {
       const bound = canvas.value.getBoundingClientRect();
       const bw = 0; // 임시
       return (
         (clientX - bound.left - bw) *
         (canvas.value.width / (bound.width - bw * 2))
       );
-    };
+    }
 
     // y 좌표
-    const canvasY = (clientY) => {
+    function canvasY(clientY) {
       const bound = canvas.value.getBoundingClientRect();
       const bw = 0; // 임시
       return (
         (clientY - bound.top - bw) *
         (canvas.value.height / (bound.height - bw * 2))
       );
-    };
+    }
 
-    // 그리기 위해 처음 좌표찍기
-    const startDraw = (event) => {
+    // 그리자!
+    function startDraw(event) {
       end_x.value = canvasX(event.clientX);
       end_y.value = canvasY(event.clientY);
       const context = canvas.value.getContext("2d");
       context.lineWidth = 10;
       ImagePrinting();
-      context.strokeStyle = colorList.value[colorIndex];
+      if (targetUpdateColor.value) {
+        context.strokeStyle = targetUpdateColor.value;
+      } else {
+        context.strokeStyle = colorList.value[colorIndex];
+      }
       context.strokeRect(
         start_x.value,
         start_y.value,
         end_x.value - start_x.value,
         end_y.value - start_y.value
       );
-    };
+    }
 
     // 이동하고자 하는 박스 찾기
-    const findMoveBoxTarget = (x, y) => {
+    function findMoveBoxTarget(x, y) {
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
         const { color, S_X, S_Y, E_X, E_Y, id } = item;
@@ -199,10 +206,10 @@ export default {
         }
       }
       return null;
-    };
+    }
 
     // 움직이자!
-    const moveBox = (event) => {
+    function moveBox(event) {
       const end_x = canvasX(event.clientX);
       const end_y = canvasY(event.clientY);
 
@@ -216,54 +223,75 @@ export default {
 
       target.E_Y += thirdToFixed(end_y - start_y.value, canvas.value.height);
 
+      target.S_X = Number(target.S_X.toFixed(5));
+      target.S_Y = Number(target.S_Y.toFixed(5));
+      target.E_X = Number(target.E_X.toFixed(5));
+      target.E_Y = Number(target.E_Y.toFixed(5));
+
       start_x.value = end_x;
       start_y.value = end_y;
 
       ImagePrinting();
-    };
+    }
 
     // 클릭 했을 때 움직이는 박스일까?
-    const findMoveBox = (event) => {
+    function findMoveBox(event) {
       start_x.value = canvasX(event.clientX);
       start_y.value = canvasY(event.clientY);
       const x = start_x.value / canvas.value.width;
       const y = start_y.value / canvas.value.height;
       const targetItemIndex = findMoveBoxTarget(x, y);
+      console.log(targetItemIndex);
       if (targetItemIndex !== null) {
         targetMoveIndex.value = targetItemIndex;
       }
-    };
+    }
 
-    const mousemove = (event) => {
+    watch(ishandleBtn, () => {
+      if (ishandleBtn.value) {
+        isgrabUpdatePoint.value = false;
+      }
+    });
+
+    function mousemove(event) {
       if (ishandleBtn.value) {
         if (targetMoveIndex.value !== null) {
           moveBox(event);
         }
       } else {
+        hoverEdgePointer(event);
+
+        if (targetUpdateColor.value) {
+          startDraw(event);
+          return;
+        }
         if (!isStartDraw.value) return;
         startDraw(event);
       }
-    };
+    }
 
-    const mousedown = (event) => {
+    function mousedown(event) {
       if (ishandleBtn.value) {
         findMoveBox(event);
       } else {
+        if (clickUpdateBox(event)) {
+          return;
+        }
         start_x.value = canvasX(event.clientX);
         start_y.value = canvasY(event.clientY);
         const x = start_x.value / canvas.value.width;
         const y = start_y.value / canvas.value.height;
         isStartDraw.value = true;
       }
-    };
+    }
 
     // 자릿수 변환 (반올림)
-    const thirdToFixed = (a, b) => {
+    function thirdToFixed(a, b) {
       return Number((a / b).toFixed(5));
       // return a / b;
-    };
+    }
 
-    const mouseup = (event) => {
+    function mouseup(event) {
       if (ishandleBtn.value) {
         targetMoveIndex.value = null;
         ImagePrinting();
@@ -276,32 +304,37 @@ export default {
           return;
 
         const data = {
-          color: colorList.value[colorIndex],
+          color: targetUpdateColor.value
+            ? targetUpdateColor.value
+            : colorList.value[colorIndex],
           S_X: thirdToFixed(start_x.value, canvas.value.width),
           S_Y: thirdToFixed(start_y.value, canvas.value.height),
           E_X: thirdToFixed(end_x.value, canvas.value.width),
           E_Y: thirdToFixed(end_y.value, canvas.value.height),
-          id: colorIndex,
+          id:
+            grabUpdatePoint.value === null ? colorIndex : grabUpdatePoint.value,
         };
-        // const data = [
-        //   colorList.value[colorIndex],
-        //   start_x.value / canvas.value.width,
-        //   start_y.value / canvas.value.height,
-        //   (end_x.value - start_x.value) / canvas.value.width,
-        //   (end_y.value - start_y.value) / canvas.value.height,
-        // ];
-        emit("addRect", data);
+
+        if (targetUpdateColor.value) {
+          emit("updateRect", grabUpdatePoint.value, data);
+          targetUpdateColor.value = false;
+          isgrabUpdatePoint.value = false;
+          grabUpdatePoint.value = null;
+        } else {
+          emit("addRect", data);
+        }
+
         colorIndex += 1;
         start_x.value = -1;
         start_y.value = -1;
         end_x.value = -1;
         end_y.value = -1;
       }
-    };
+    }
 
-    const clearRect = () => {
+    function clearRect() {
       emit("clearRect");
-    };
+    }
 
     watch(rectList, () => {
       ImagePrinting();
@@ -312,6 +345,119 @@ export default {
         mouseup();
       }
     });
+
+    function pointerGrab(x, y, target_x, target_y) {
+      if (
+        target_x - 20 / canvas.value.width <= x &&
+        x <= target_x + 20 / canvas.value.height
+      ) {
+        if (
+          target_y - 20 / canvas.value.width <= y &&
+          y <= target_y + 20 / canvas.value.height
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    const grabUpdatePoint = ref(null);
+    const isgrabUpdatePoint = ref(false);
+    const targetUpdateColor = ref(false);
+
+    function hoverEdgePointer(event) {
+      const x = canvasX(event.clientX) / canvas.value.width;
+      const y = canvasY(event.clientY) / canvas.value.height;
+
+      for (let i = 0; i < rectList.value.length; i++) {
+        const item = rectList.value[i];
+        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+
+        // 좌상
+        const leftHeight = pointerGrab(x, y, S_X, S_Y);
+        if (leftHeight) {
+          isgrabUpdatePoint.value = "pointer";
+          return true;
+        }
+
+        //우상
+        const rightHeight = pointerGrab(x, y, E_X, S_Y);
+        if (rightHeight) {
+          isgrabUpdatePoint.value = "pointer";
+          return true;
+        }
+
+        //좌하
+        const leftDown = pointerGrab(x, y, S_X, E_Y);
+        if (leftDown) {
+          isgrabUpdatePoint.value = "pointer";
+          return true;
+        }
+
+        //우하
+        const rightDown = pointerGrab(x, y, E_X, E_Y);
+        if (rightDown) {
+          isgrabUpdatePoint.value = "pointer";
+          return true;
+        }
+      }
+      isgrabUpdatePoint.value = false;
+      return false;
+    }
+
+    function clickUpdateBox(event) {
+      const x = canvasX(event.clientX) / canvas.value.width;
+      const y = canvasY(event.clientY) / canvas.value.height;
+
+      for (let i = 0; i < rectList.value.length; i++) {
+        const item = rectList.value[i];
+        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+
+        // 좌상
+        const leftHeight = pointerGrab(x, y, S_X, S_Y);
+        if (leftHeight) {
+          start_x.value = E_X * canvas.value.width;
+          start_y.value = E_Y * canvas.value.height;
+          grabUpdatePoint.value = id;
+          targetUpdateColor.value = color;
+          return true;
+        }
+
+        //우상
+        const rightHeight = pointerGrab(x, y, E_X, S_Y);
+        if (rightHeight) {
+          start_x.value = S_X * canvas.value.width;
+          start_y.value = E_Y * canvas.value.height;
+          grabUpdatePoint.value = id;
+          targetUpdateColor.value = color;
+          return true;
+        }
+
+        //좌하
+        const leftDown = pointerGrab(x, y, S_X, E_Y);
+        if (leftDown) {
+          start_x.value = E_X * canvas.value.width;
+          start_y.value = S_Y * canvas.value.height;
+          grabUpdatePoint.value = id;
+          isgrabUpdatePoint.value = "pointer";
+          targetUpdateColor.value = color;
+          return true;
+        }
+
+        //우하
+        const rightDown = pointerGrab(x, y, E_X, E_Y);
+        if (rightDown) {
+          start_x.value = S_X * canvas.value.width;
+          start_y.value = S_Y * canvas.value.height;
+          grabUpdatePoint.value = id;
+          targetUpdateColor.value = color;
+          return true;
+        }
+      }
+      isgrabUpdatePoint.value = false;
+      grabUpdatePoint.value = null;
+      return false;
+    }
 
     return {
       uploadImg,
@@ -326,6 +472,8 @@ export default {
       clearRect,
       ishandleBtn,
       setIsHandleBtn,
+
+      isgrabUpdatePoint,
     };
   },
 };

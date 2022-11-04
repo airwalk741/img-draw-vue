@@ -5,8 +5,9 @@
       @addRect="addRect"
       @clearRect="clearRect"
       @removeRect="removeRect"
+      @updateRect="updateRect"
     />
-    <!-- <LabelCardList :myList="rectList" @removeRect="removeRect" /> -->
+    <LabelCardList :myList="rectList" @removeRect="removeRect" />
   </div>
 </template>
 
@@ -22,7 +23,7 @@ import LabelCardList from "./components/LabelCardList.vue";
 export default {
   components: {
     ImageLoad,
-    // LabelCardList
+    LabelCardList,
   },
 
   setup() {
@@ -38,8 +39,17 @@ export default {
     };
 
     const removeRect = (id) => {
-      console.log(id);
-      rectList.value = rectList.value.filter((item) => item[5] !== id);
+      rectList.value = rectList.value.filter((item) => item.id !== id);
+    };
+
+    const updateRect = (id, data) => {
+      rectList.value = rectList.value.map((item) => {
+        if (item.id === id) {
+          return data;
+        } else {
+          return item;
+        }
+      });
     };
 
     return {
@@ -47,6 +57,7 @@ export default {
       addRect,
       clearRect,
       removeRect,
+      updateRect,
     };
   },
 };

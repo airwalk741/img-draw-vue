@@ -2,25 +2,28 @@
   <div class="label-card-container">
     <a-card v-for="(item, index) in rectList" :key="index">
       <div class="delete">
-        <div class="card-color" :style="`background-color: ${item[0]}`"></div>
-        <span class="delete-icon" @click="removeRect(item[5])">X</span>
+        <div
+          class="card-color"
+          :style="`background-color: ${item.color}`"
+        ></div>
+        <span class="delete-icon" @click="removeRect(item.id)">X</span>
       </div>
 
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false">
-        <p>{{ item[1] }}</p>
-        <p>{{ item[2] }}</p>
+        <p>{{ item.S_X }}</p>
+        <p>{{ item.S_Y }}</p>
       </a-card-grid>
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item[3] }}</p>
-        <p>{{ item[2] }}</p></a-card-grid
+        ><p>{{ item.E_X }}</p>
+        <p>{{ item.S_Y }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item[1] }}</p>
-        <p>{{ item[4] }}</p></a-card-grid
+        ><p>{{ item.S_X }}</p>
+        <p>{{ item.E_Y }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item[3] }}</p>
-        <p>{{ item[4] }}</p></a-card-grid
+        ><p>{{ item.E_X }}</p>
+        <p>{{ item.E_Y }}</p></a-card-grid
       >
     </a-card>
   </div>
