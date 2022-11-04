@@ -39,12 +39,13 @@ export default {
   setup() {
     const rectList = ref([]);
     const targetBox = ref({});
-    watch(targetBox, () => {
-      targetBox.value = {};
-    });
+    // watch(targetBox, () => {
+    //   targetBox.value = {};
+    // });
 
     const addRect = (data) => {
       rectList.value.unshift(data);
+      targetBox.value = {};
     };
 
     const clearRect = () => {
@@ -81,6 +82,11 @@ export default {
           return item;
         }
       });
+      if (!_.isEmpty(targetBox)) {
+        if (targetBox.value.id === id) {
+          targetBox.value.color = color;
+        }
+      }
     };
 
     return {
