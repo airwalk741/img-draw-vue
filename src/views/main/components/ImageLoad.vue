@@ -173,6 +173,8 @@ export default {
       emit("setCanvasSize", {
         width: imageLoad.value.width * imgCanvasSizeCount.value,
         height: imageLoad.value.height * imgCanvasSizeCount.value,
+        canvasWidth: canvas.value.width,
+        canvasHeight: canvas.value.height,
       });
 
       context.drawImage(
@@ -468,7 +470,6 @@ export default {
           isgrabUpdatePoint.value = `url(${penImg}), auto`;
           grabUpdatePoint.value = null;
         } else {
-          console.log(data);
           emit("addRect", data);
           colorIndex += 1;
         }
@@ -623,7 +624,9 @@ export default {
     });
 
     window.addEventListener("mouseup", () => {
-      mouseup();
+      if (ishandleBtn.value || isStartDraw.value) {
+        mouseup();
+      }
     });
 
     return {

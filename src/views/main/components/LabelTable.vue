@@ -4,21 +4,21 @@
       <a-button
         type="primary"
         style="margin-right: 10px; font-weight: bolder"
-        @click="setIsPixel(false)"
+        @click="ALlHandleCopy"
         >All Cocy</a-button
       >
       <a-button
-        v-if="isPixel"
+        v-if="!isPixel"
         type="primary"
         style="margin-right: 10px; font-weight: bolder"
-        @click="setIsPixel(false)"
+        @click="setIsPixel(true)"
         >Pixel</a-button
       >
       <a-button
         v-else
         type="primary"
         style="font-weight: bolder"
-        @click="setIsPixel(true)"
+        @click="setIsPixel(false)"
       >
         Relative
       </a-button>
@@ -39,10 +39,17 @@
           @click="selectBox(item.id)"
         >
           <td>{{ index + 1 }}.</td>
-          <td>{{ item.S_X.toFixed(2) }}</td>
-          <td>{{ item.S_Y.toFixed(2) }}</td>
-          <td>{{ item.E_X.toFixed(2) }}</td>
-          <td>{{ item.E_Y.toFixed(2) }}</td>
+          <td v-if="isPixel">{{ item.S_X.toFixed(2) }}</td>
+          <td v-else>{{ (item.S_X / canvasWidth).toFixed(5) }}</td>
+
+          <td v-if="isPixel">{{ item.S_Y.toFixed(2) }}</td>
+          <td v-else>{{ (item.S_Y / canvasHeight).toFixed(5) }}</td>
+
+          <td v-if="isPixel">{{ item.E_X.toFixed(2) }}</td>
+          <td v-else>{{ (item.E_X / canvasWidth).toFixed(5) }}</td>
+
+          <td v-if="isPixel">{{ item.E_Y.toFixed(2) }}</td>
+          <td v-else>{{ (item.E_Y / canvasHeight).toFixed(5) }}</td>
           <td>
             <input
               class="card-color"
@@ -52,7 +59,7 @@
             />
           </td>
           <td>
-            <i class="fas fa-copy"></i>
+            <i class="fas fa-copy" @click="handleCopy(item)"></i>
             <i class="fas fa-trash-alt" @click="removeRect(item)"></i>
           </td>
         </tr>
@@ -69,22 +76,30 @@ export default {
     myList: {
       type: Array,
     },
+    canvasSize: {
+      type: Object,
+    },
   },
   emits: ["removeRect", "selectBox", "changeColor"],
 
   setup(props, { emit }) {
     const rectList = computed(() => props.myList);
 
-    const isPixel = ref(false);
+    const canvasWidth = computed(() => props.canvasSize.canvasWidth);
+    const canvasHeight = computed(() => props.canvasSize.canvasHeight);
+
+    const isPixel = ref(true);
     const setIsPixel = (data) => {
       isPixel.value = data;
     };
 
     const tableRef = ref(null);
 
-    // watch(rectList, () => {
-    //   tableRef.value.scrollTop = tableRef.value.scrollHeight;
-    // });
+    watch(rectList, () => {
+      setTimeout(() => {
+        tableRef.value.scrollTop = tableRef.value.scrollHeight;
+      }, 0);
+    });
 
     const removeRect = (id) => {
       emit("removeRect", id);
@@ -99,6 +114,50 @@ export default {
       emit("changeColor", id, event.currentTarget.value);
     };
 
+    const handleCopy = (item) => {
+      const { S_X, S_Y, E_X, E_Y } = item;
+      const textarea = document.createElement("textarea");
+      document.body.appendChild(textarea);
+
+      if (isPixel.value) {
+        textarea.value = `${S_X}, ${S_Y}, ${E_X}, ${E_Y}`;
+      } else {
+        textarea.value = `${S_X / canvasWidth.value}, ${
+          S_Y / canvasHeight.value
+        }, ${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value}`;
+      }
+
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    };
+
+    const ALlHandleCopy = () => {
+      const textarea = document.createElement("textarea");
+      document.body.appendChild(textarea);
+      textarea.value = "";
+      for (let i = 0; i < rectList.value.length; i++) {
+        const item = rectList.value[i];
+        const { S_X, S_Y, E_X, E_Y } = item;
+
+        if (isPixel.value) {
+          textarea.value += `${S_X}, ${S_Y}, ${E_X}, ${E_Y}`;
+        } else {
+          textarea.value += `${S_X / canvasWidth.value}, ${
+            S_Y / canvasHeight.value
+          }, ${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value}`;
+        }
+
+        if (i !== rectList.value.length - 1) {
+          textarea.value += "\n";
+        }
+      }
+
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    };
+
     return {
       isPixel,
       setIsPixel,
@@ -107,6 +166,10 @@ export default {
       removeRect,
       selectBox,
       changeColor,
+      handleCopy,
+      canvasHeight,
+      canvasWidth,
+      ALlHandleCopy,
     };
   },
 };
