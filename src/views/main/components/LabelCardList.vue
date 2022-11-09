@@ -1,6 +1,6 @@
 <template>
   <div class="label-card-container">
-    <a-card
+    <div
       v-for="(item, index) in rectList"
       :key="index"
       @click="selectBox(item.id)"
@@ -35,7 +35,7 @@
         ><p>{{ item.E_X.toFixed(2) }}</p>
         <p>{{ item.E_Y.toFixed(2) }}</p></a-card-grid
       >
-    </a-card>
+    </div>
   </div>
 </template>
 
@@ -54,7 +54,6 @@ export default {
   emits: ["removeRect", "selectBox", "changeColor"],
   setup(props, { emit }) {
     const store = useStore();
-    const colorList = computed(() => store.state.colorList);
 
     const rectList = computed(
       () => props.myList
@@ -72,8 +71,6 @@ export default {
       // })
     );
 
-    const canvas = computed(() => props.canvasSize);
-
     const removeRect = (id) => {
       emit("removeRect", id);
     };
@@ -89,7 +86,6 @@ export default {
 
     return {
       rectList,
-      colorList,
       removeRect,
       selectBox,
       changeColor,

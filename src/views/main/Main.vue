@@ -77,13 +77,13 @@ export default {
       rectList.value = [];
     };
 
-    const removeRect = (id) => {
-      if (!_.isEmpty(targetBox)) {
-        if (targetBox.value.id === id) {
+    const removeRect = (target) => {
+      if (!_.isEmpty(targetBox.value)) {
+        if (targetBox.value.id === target.id) {
           targetBox.value = {};
         }
       }
-      rectList.value = rectList.value.filter((item) => item.id !== id);
+      rectList.value = rectList.value.filter((item) => item.id !== target.id);
     };
 
     const updateRect = (id, data) => {
@@ -94,7 +94,7 @@ export default {
           return item;
         }
       });
-      if (!_.isEmpty(targetBox)) {
+      if (!_.isEmpty(targetBox.value)) {
         if (targetBox.value.id === id) {
           targetBox.value = data;
         }
@@ -116,7 +116,7 @@ export default {
           return item;
         }
       });
-      if (!_.isEmpty(targetBox)) {
+      if (!_.isEmpty(targetBox.value)) {
         if (targetBox.value.id === id) {
           targetBox.value.color = color;
         }

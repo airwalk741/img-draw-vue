@@ -129,9 +129,6 @@ export default {
     const setIsHandleBtn = (data) => {
       ishandleBtn.value = data;
     };
-    watch(targetFile, () => {
-      console.log(targetFile.value);
-    });
 
     const getByteSize = (size) => {
       const byteUnits = ["KB", "MB", "GB", "TB"];
@@ -307,10 +304,12 @@ export default {
     function moveBox(event) {
       const end_x = canvasX(event.clientX);
       const end_y = canvasY(event.clientY);
-
       const target = _.find(rectList.value, { id: targetMoveIndex.value });
 
       const newData = _.cloneDeep(target);
+
+      const width = newData.E_X - newData.S_X;
+      const height = newData.E_Y - newData.S_Y;
 
       newData.S_X += thirdToFixed(end_x - start_x.value);
 
@@ -326,38 +325,33 @@ export default {
 
       if (S_X < 0) {
         target.S_X = 0;
+        target.E_X = width;
         isZero = true;
       }
       if (S_Y < 0) {
         target.S_Y = 0;
+        target.E_Y = height;
         isZero = true;
       }
       if (E_X > canvas.value.width) {
         target.E_X = canvas.value.width;
+        target.S_X = target.E_X - width;
         isZero = true;
       }
       if (E_Y > canvas.value.height) {
         target.E_Y = canvas.value.height;
+        target.S_Y = target.E_Y - height;
         isZero = true;
       }
 
       if (!isZero) {
         target.S_X = S_X;
         target.S_Y = S_Y;
-        target.E_X = E_X;
-        target.E_Y = E_Y;
+        target.E_X = width + S_X;
+        // target.E_X = E_X;
+        // target.E_Y = E_Y;
+        target.E_Y = height + S_Y;
       }
-      // target.E_X = S_X + (target.E_X - target.S_X);
-      // target.E_Y = S_Y + (target.E_Y - target.S_Y);
-
-      // target.S_X = S_X;
-      // target.S_Y = S_Y;
-
-      // target.S_X = Number(target.S_X.toFixed(5));
-      // target.S_Y = Number(target.S_Y.toFixed(5));
-      // target.E_X = Number(target.E_X.toFixed(5));
-      // target.E_Y = Number(target.E_Y.toFixed(5));
-
       start_x.value = end_x;
       start_y.value = end_y;
 

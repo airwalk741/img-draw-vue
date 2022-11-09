@@ -32,15 +32,29 @@
         <th>End X</th>
         <th>End Y</th>
         <th>Color</th>
-        <th>Copy</th>
-        <tr v-for="(item, index) of rectList" :key="item.color">
+        <th>Action</th>
+        <tr
+          v-for="(item, index) in rectList"
+          :key="index"
+          @click="selectBox(item.id)"
+        >
           <td>{{ index + 1 }}.</td>
           <td>{{ item.S_X.toFixed(2) }}</td>
           <td>{{ item.S_Y.toFixed(2) }}</td>
           <td>{{ item.E_X.toFixed(2) }}</td>
           <td>{{ item.E_Y.toFixed(2) }}</td>
-          <td><input class="card-color" type="color" :value="item.color" /></td>
-          <td>{{ item.color }}</td>
+          <td>
+            <input
+              class="card-color"
+              type="color"
+              :value="item.color"
+              @input="(e) => changeColor(item.id, e)"
+            />
+          </td>
+          <td>
+            <i class="fas fa-copy"></i>
+            <i class="fas fa-trash-alt" @click="removeRect(item)"></i>
+          </td>
         </tr>
       </table>
     </div>
@@ -56,6 +70,8 @@ export default {
       type: Array,
     },
   },
+  emits: ["removeRect", "selectBox", "changeColor"],
+
   setup(props, { emit }) {
     const rectList = computed(() => props.myList);
 
@@ -66,16 +82,31 @@ export default {
 
     const tableRef = ref(null);
 
-    watch(rectList, () => {
-      tableRef.value.scrollTop = tableRef.value.scrollHeight;
-      console.log(tableRef.value.scrollHeight);
-    });
+    // watch(rectList, () => {
+    //   tableRef.value.scrollTop = tableRef.value.scrollHeight;
+    // });
+
+    const removeRect = (id) => {
+      emit("removeRect", id);
+    };
+
+    const selectBox = (id) => {
+      emit("selectBox", id);
+    };
+
+    const changeColor = (id, event) => {
+      // console.log();
+      emit("changeColor", id, event.currentTarget.value);
+    };
 
     return {
       isPixel,
       setIsPixel,
       rectList,
       tableRef,
+      removeRect,
+      selectBox,
+      changeColor,
     };
   },
 };

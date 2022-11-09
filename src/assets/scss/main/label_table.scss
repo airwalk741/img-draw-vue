@@ -34,6 +34,17 @@
         margin: auto;
         cursor: pointer;
       }
+
+      .fas {
+        cursor: pointer;
+        &:hover {
+          color: crimson;
+        }
+      }
+
+      .fa-trash-alt {
+        margin-left: 20px;
+      }
     }
   }
 }
