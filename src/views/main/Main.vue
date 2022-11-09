@@ -1,20 +1,34 @@
 <template>
   <div class="main">
-    <ImageLoad
-      :myList="rectList"
-      @addRect="addRect"
-      @clearRect="clearRect"
-      @removeRect="removeRect"
-      @updateRect="updateRect"
-      @selectBox="selectBox"
-      :box="targetBox"
-    />
-    <LabelCardList
+    <div class="img">
+      <ImageLoad
+        :myList="rectList"
+        @addRect="addRect"
+        @clearRect="clearRect"
+        @removeRect="removeRect"
+        @updateRect="updateRect"
+        @selectBox="selectBox"
+        :box="targetBox"
+        @setCanvasSize="setCanvasSize"
+        :canvasSize="canvasSize"
+      />
+    </div>
+    <!-- <LabelCardList
       :myList="rectList"
       @removeRect="removeRect"
       @selectBox="selectBox"
       @changeColor="changeColor"
-    />
+      :canvasSize="canvasSize"
+    /> -->
+    <div class="table">
+      <LabelTable
+        :myList="rectList"
+        @removeRect="removeRect"
+        @selectBox="selectBox"
+        @changeColor="changeColor"
+        :canvasSize="canvasSize"
+      />
+    </div>
   </div>
 </template>
 
@@ -24,6 +38,7 @@ import ImageLoad from "./components/ImageLoad.vue";
 import LabelCardList from "./components/LabelCardList.vue";
 
 import _ from "lodash";
+import LabelTable from "./components/LabelTable.vue";
 
 // rectList = [
 //   startX, startY, 가로길이, 세로길이
@@ -32,7 +47,8 @@ import _ from "lodash";
 export default {
   components: {
     ImageLoad,
-    LabelCardList,
+    // LabelCardList,
+    LabelTable,
   },
 
   setup() {
@@ -42,8 +58,17 @@ export default {
     //   targetBox.value = {};
     // });
 
+    const canvasSize = ref({
+      width: 0,
+      height: 0,
+    });
+
+    const setCanvasSize = (data) => {
+      canvasSize.value = data;
+    };
+
     const addRect = (data) => {
-      rectList.value.unshift(data);
+      rectList.value = [...rectList.value, data];
       targetBox.value = {};
     };
 
@@ -107,6 +132,8 @@ export default {
       selectBox,
       targetBox,
       changeColor,
+      setCanvasSize,
+      canvasSize,
     };
   },
 };

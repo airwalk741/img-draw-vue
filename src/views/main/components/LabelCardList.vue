@@ -20,20 +20,20 @@
       </div>
 
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false">
-        <p>{{ item.S_X.toFixed(5) }}</p>
-        <p>{{ item.S_Y.toFixed(5) }}</p>
+        <p>{{ item.S_X.toFixed(2) }}</p>
+        <p>{{ item.S_Y.toFixed(2) }}</p>
       </a-card-grid>
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.E_X.toFixed(5) }}</p>
-        <p>{{ item.S_Y.toFixed(5) }}</p></a-card-grid
+        ><p>{{ item.E_X.toFixed(2) }}</p>
+        <p>{{ item.S_Y.toFixed(2) }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.S_X.toFixed(5) }}</p>
-        <p>{{ item.E_Y.toFixed(5) }}</p></a-card-grid
+        ><p>{{ item.S_X.toFixed(2) }}</p>
+        <p>{{ item.E_Y.toFixed(2) }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.E_X.toFixed(5) }}</p>
-        <p>{{ item.E_Y.toFixed(5) }}</p></a-card-grid
+        ><p>{{ item.E_X.toFixed(2) }}</p>
+        <p>{{ item.E_Y.toFixed(2) }}</p></a-card-grid
       >
     </a-card>
   </div>
@@ -47,13 +47,32 @@ export default {
     myList: {
       type: Array,
     },
+    canvasSize: {
+      type: Object,
+    },
   },
   emits: ["removeRect", "selectBox", "changeColor"],
   setup(props, { emit }) {
     const store = useStore();
     const colorList = computed(() => store.state.colorList);
 
-    const rectList = computed(() => props.myList);
+    const rectList = computed(
+      () => props.myList
+      // props.myList.map((item) => {
+      //   const { width, height } = props.canvasSize;
+      //   const { S_X, S_Y, E_X, E_Y } = item;
+
+      //   return {
+      //     ...item,
+      //     S_X: S_X * width,
+      //     S_Y: S_Y * height,
+      //     E_X: E_X * width,
+      //     E_Y: E_Y * height,
+      //   };
+      // })
+    );
+
+    const canvas = computed(() => props.canvasSize);
 
     const removeRect = (id) => {
       emit("removeRect", id);

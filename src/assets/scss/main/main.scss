@@ -1,6 +1,17 @@
 .main {
-  width: 95vw;
+  width: 90vw;
   margin: 50px auto;
-  display: flex;
-  justify-content: space-between;
+  // display: flex;
+  // justify-content: space-between;
+
+  display: grid;
+  grid-template-areas: "img table table table table table";
+
+  .img {
+    grid-area: img;
+  }
+
+  .table {
+    grid-area: table;
+  }
 }
