@@ -20,20 +20,20 @@
       </div>
 
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false">
-        <p>{{ item.S_X }}</p>
-        <p>{{ item.S_Y }}</p>
+        <p>{{ item.S_X.toFixed(5) }}</p>
+        <p>{{ item.S_Y.toFixed(5) }}</p>
       </a-card-grid>
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.E_X }}</p>
-        <p>{{ item.S_Y }}</p></a-card-grid
+        ><p>{{ item.E_X.toFixed(5) }}</p>
+        <p>{{ item.S_Y.toFixed(5) }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.S_X }}</p>
-        <p>{{ item.E_Y }}</p></a-card-grid
+        ><p>{{ item.S_X.toFixed(5) }}</p>
+        <p>{{ item.E_Y.toFixed(5) }}</p></a-card-grid
       >
       <a-card-grid style="width: 50%; text-align: center" :hoverable="false"
-        ><p>{{ item.E_X }}</p>
-        <p>{{ item.E_Y }}</p></a-card-grid
+        ><p>{{ item.E_X.toFixed(5) }}</p>
+        <p>{{ item.E_Y.toFixed(5) }}</p></a-card-grid
       >
     </a-card>
   </div>

@@ -1,38 +1,29 @@
 <template>
   <div>
     <div class="btn-container">
-      <div class="img-info">
-        <span> {{ targetFile?.name }}</span>
-        <span
-          >&nbsp;&nbsp;
-          {{ targetFile ? `(${getByteSize(targetFile?.size)})` : "" }}</span
-        >
-      </div>
-      <div>
-        <a-button
-          class="btn"
-          type="primary"
-          :disabled="!targetFile"
-          @click="clearRect"
-          style="margin-right: 10px"
-          >Clear</a-button
-        >
-        <a-button
-          v-if="!ishandleBtn"
-          type="primary"
-          :disabled="!targetFile"
-          @click="setIsHandleBtn(true)"
-          ><i class="far fa-hand-paper"></i
-        ></a-button>
+      <a-button
+        class="btn"
+        type="primary"
+        :disabled="!targetFile"
+        @click="clearRect"
+        style="margin-right: 10px"
+        >Clear</a-button
+      >
+      <a-button
+        v-if="!ishandleBtn"
+        type="primary"
+        :disabled="!targetFile"
+        @click="setIsHandleBtn(true)"
+        ><i class="far fa-hand-paper"></i
+      ></a-button>
 
-        <a-button
-          v-else
-          type="primary"
-          :disabled="!targetFile"
-          @click="setIsHandleBtn(false)"
-          ><i class="fas fa-pencil-alt"></i
-        ></a-button>
-      </div>
+      <a-button
+        v-else
+        type="primary"
+        :disabled="!targetFile"
+        @click="setIsHandleBtn(false)"
+        ><i class="fas fa-pencil-alt"></i
+      ></a-button>
     </div>
 
     <div
@@ -67,17 +58,13 @@
         @contextMenu="() => console.log('test')"
       ></canvas>
     </div>
-    <div class="pointer-container">
-      <p>X:</p>
-      <p>Y:</p>
-    </div>
   </div>
 </template>
 
 <script>
 import uploadImg from "@/assets/img/upload.png";
 import { ref } from "@vue/reactivity";
-import { computed, watch } from "@vue/runtime-core";
+import { computed, onMounted, watch } from "@vue/runtime-core";
 import { useStore } from "vuex";
 import _ from "lodash";
 
@@ -107,19 +94,6 @@ export default {
     const setIsHandleBtn = (data) => {
       ishandleBtn.value = data;
     };
-    watch(targetFile, () => {
-      console.log(targetFile.value);
-    });
-
-    const getByteSize = (size) => {
-      const byteUnits = ["KB", "MB", "GB", "TB"];
-
-      for (let i = 0; i < byteUnits.length; i++) {
-        size = Math.floor(size / 1024);
-
-        if (size < 1024) return size.toFixed(1) + byteUnits[i];
-      }
-    };
 
     // 그릴까?
     const isStartDraw = ref(false);
@@ -145,17 +119,17 @@ export default {
       const context = canvas.value.getContext("2d");
       context.clearRect(0, 0, canvas.value.width, canvas.value.height);
 
-      const imgWidthCount = canvas.value.width / imageLoad.value.width;
-      const imgHeightCount = canvas.value.height / imageLoad.value.height;
-      const count =
-        imgWidthCount < imgHeightCount ? imgWidthCount : imgHeightCount;
+      let a_w = canvas.value.width / imageLoad.value.width;
+      let a_h = canvas.value.height / imageLoad.value.height;
+
+      const target = a_w > a_h ? a_h : a_w;
 
       context.drawImage(
         imageLoad.value,
         0,
         0,
-        imageLoad.value.width * count,
-        imageLoad.value.height * count
+        imageLoad.value.width * target,
+        imageLoad.value.height * target
       );
 
       for (let i = 0; i < rectList.value.length; i++) {
@@ -209,24 +183,20 @@ export default {
     function canvasX(clientX) {
       const bound = canvas.value.getBoundingClientRect();
       const bw = 0; // 임시
-
-      const data =
+      return (
         (clientX - bound.left - bw) *
-        (canvas.value.width / (bound.width - bw * 2));
-
-      return data < 0 ? 0 : data;
+        (canvas.value.width / (bound.width - bw * 2))
+      );
     }
 
     // y 좌표
     function canvasY(clientY) {
       const bound = canvas.value.getBoundingClientRect();
       const bw = 0; // 임시
-
-      const data =
+      return (
         (clientY - bound.top - bw) *
-        (canvas.value.height / (bound.height - bw * 2));
-
-      return data < 0 ? 0 : data;
+        (canvas.value.height / (bound.height - bw * 2))
+      );
     }
 
     // 그리자!
@@ -292,48 +262,18 @@ export default {
 
       const target = _.find(rectList.value, { id: targetMoveIndex.value });
 
-      const newData = _.cloneDeep(target);
+      target.S_X += thirdToFixed(end_x - start_x.value, canvas.value.width);
 
-      newData.S_X += thirdToFixed(end_x - start_x.value, canvas.value.width);
+      target.S_Y += thirdToFixed(end_y - start_y.value, canvas.value.height);
 
-      newData.S_Y += thirdToFixed(end_y - start_y.value, canvas.value.height);
+      target.E_X += thirdToFixed(end_x - start_x.value, canvas.value.width);
 
-      newData.E_X += thirdToFixed(end_x - start_x.value, canvas.value.width);
+      target.E_Y += thirdToFixed(end_y - start_y.value, canvas.value.height);
 
-      newData.E_Y += thirdToFixed(end_y - start_y.value, canvas.value.height);
-
-      const { S_X, S_Y, E_X, E_Y } = newData;
-
-      let isZero = false;
-
-      if (S_X < 0) {
-        target.S_X = 0;
-        isZero = true;
-      }
-      if (S_Y < 0) {
-        target.S_Y = 0;
-        isZero = true;
-      }
-      if (E_X > 1) {
-        target.E_X = 1;
-        isZero = true;
-      }
-      if (E_Y > 1) {
-        target.E_Y = 1;
-        isZero = true;
-      }
-
-      if (!isZero) {
-        target.S_X = S_X;
-        target.S_Y = S_Y;
-        target.E_X = E_X;
-        target.E_Y = E_Y;
-      }
-
-      // target.S_X = Number(target.S_X.toFixed(5));
-      // target.S_Y = Number(target.S_Y.toFixed(5));
-      // target.E_X = Number(target.E_X.toFixed(5));
-      // target.E_Y = Number(target.E_Y.toFixed(5));
+      target.S_X = Number(target.S_X.toFixed(5));
+      target.S_Y = Number(target.S_Y.toFixed(5));
+      target.E_X = Number(target.E_X.toFixed(5));
+      target.E_Y = Number(target.E_Y.toFixed(5));
 
       start_x.value = end_x;
       start_y.value = end_y;
@@ -394,8 +334,8 @@ export default {
 
     // 자릿수 변환 (반올림)
     function thirdToFixed(a, b) {
-      // return Number((a / b).toFixed(5));
-      return a / b;
+      return Number((a / b).toFixed(5));
+      // return a / b;
     }
 
     function mouseup(event) {
@@ -421,18 +361,6 @@ export default {
           id:
             grabUpdatePoint.value === null ? colorIndex : grabUpdatePoint.value,
         };
-
-        if (data.S_X > data.E_X) {
-          const temp = data.E_X;
-          data.E_X = data.S_X;
-          data.S_X = temp;
-        }
-
-        if (data.S_Y > data.E_Y) {
-          const temp = data.E_Y;
-          data.E_Y = data.S_Y;
-          data.S_Y = temp;
-        }
 
         if (targetUpdateColor.value) {
           emit("updateRect", grabUpdatePoint.value, data);
@@ -603,22 +531,6 @@ export default {
       );
     });
 
-    window.addEventListener("mousedown", (e) => {
-      if (targetFile.value !== null) {
-        mousedown(e);
-      }
-    });
-    window.addEventListener("mousemove", (e) => {
-      if (targetFile.value !== null) {
-        mousemove(e);
-      }
-    });
-    window.addEventListener("mouseup", (e) => {
-      if (targetFile.value !== null) {
-        mouseup(e);
-      }
-    });
-
     return {
       uploadImg,
       isover,
@@ -632,7 +544,7 @@ export default {
       clearRect,
       ishandleBtn,
       setIsHandleBtn,
-      getByteSize,
+
       isgrabUpdatePoint,
     };
   },
