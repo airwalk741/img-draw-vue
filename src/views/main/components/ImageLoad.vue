@@ -7,13 +7,17 @@
           >&nbsp;&nbsp; {{ `(${getByteSize(targetFile?.size)})` }}</span
         >
         <span v-if="canvasSize.width"
-          >&nbsp;&nbsp;
-          {{
-            `${canvasSize.width.toFixed(2)} X ${canvasSize.height.toFixed(2)}`
-          }}</span
+          >&nbsp;&nbsp; {{ `${imageLoad.width} X ${imageLoad.height}` }}</span
         >
       </div>
       <div>
+        <a-input-number
+          id="inputNumber"
+          v-model:value="lineWidth"
+          :min="1"
+          :max="15"
+          style="margin-right: 20px"
+        />
         <a-button
           class="btn"
           type="primary"
@@ -41,46 +45,68 @@
     </div>
 
     <div
-      v-if="isover && !targetFile"
-      @dragleave="setOver(false)"
+      style="width: 935px; height: 550px"
       @dragover.prevent
       @drop.prevent="onDrop"
-      class="drag-and-drop card-body"
     >
-      <h1 className="drag-text">Drag and Drop</h1>
-    </div>
-
-    <div
-      class="load-container"
-      @dragover.prevent
-      @dragover="setOver(true)"
-      :class="targetFile && 'target'"
-    >
-      <img v-if="!isover && !targetFile" :src="uploadImg" alt="load" />
-      <!-- <input type="file" className="d-none" id="upload-input" /> -->
-      <canvas
-        width="1920"
-        height="1080"
-        v-show="targetFile"
-        ref="canvas"
-        @mousedown="mousedown"
-        @mousemove="mousemove"
-        @mouseup="mouseup"
+      <div
+        v-if="isover && !targetFile"
+        @dragleave="setOver(false)"
         @dragover.prevent
         @drop.prevent="onDrop"
-        :style="`cursor: ${
-          ishandleBtn
-            ? 'pointer'
-            : isgrabUpdatePoint
-            ? isgrabUpdatePoint
-            : 'auto'
-        }`"
-        @contextMenu="() => console.log('test')"
-      ></canvas>
+        class="drag-and-drop card-body"
+      >
+        <h1 className="drag-text">Drag and Drop</h1>
+      </div>
+
+      <div
+        class="load-container"
+        @dragover.prevent
+        @dragover="setOver(true)"
+        :class="targetFile && 'target'"
+        @dragleave="setOver(false)"
+        @drop.prevent="onDrop"
+        :style="`width: ${imageLoad.width * imgCanvasSizeCount}px; height: ${
+          imageLoad.height * imgCanvasSizeCount
+        }px`"
+      >
+        <div className="upload-img-container" v-if="!targetFile">
+          <label htmlFor="upload"></label>
+          <img v-if="!isover && !targetFile" :src="uploadImg" alt="load" />
+          <input
+            type="file"
+            className=""
+            id="upload"
+            accept="image/jpeg, image/png, image/jpg"
+            style="display: none"
+            @change="handleFile"
+          />
+        </div>
+        <!-- <input type="file" className="d-none" id="upload-input" /> -->
+        <canvas
+          width="935"
+          height="550"
+          v-show="targetFile"
+          ref="canvas"
+          @mousedown="mousedown"
+          @mousemove="mousemove"
+          @mouseup="mouseup"
+          @dragover.prevent
+          @drop.prevent="onDrop"
+          :style="`cursor: ${
+            ishandleBtn
+              ? 'pointer'
+              : isgrabUpdatePoint
+              ? isgrabUpdatePoint
+              : 'auto'
+          }; `"
+        ></canvas>
+      </div>
     </div>
+
     <div class="pointer-container">
-      <p>X: {{ userPointer.x }}</p>
-      <p>Y: {{ userPointer.y }}</p>
+      <p>X: {{ Math.round(userPointer.x / imgCanvasSizeCount) }}</p>
+      <p>Y: {{ Math.round(userPointer.y / imgCanvasSizeCount) }}</p>
     </div>
   </div>
 </template>
@@ -112,6 +138,7 @@ export default {
     "updateRect",
     "selectBox",
     "setCanvasSize",
+    "setImgCanvasSizeCount",
   ],
   setup(props, { emit }) {
     let rectList = computed(() => props.myList);
@@ -151,6 +178,11 @@ export default {
       isover.value = data;
     };
 
+    function handleFile(e) {
+      const file = e.target.files[0];
+      targetFile.value = file;
+    }
+
     function onDrop(event) {
       clearRect();
       const items = event.dataTransfer.files;
@@ -159,17 +191,22 @@ export default {
 
     //
     let colorIndex = 0;
-    const imgCanvasSizeCount = ref(0);
+    const imgCanvasSizeCount = ref(1);
     function ImagePrinting() {
-      if (!imageLoad.value) return;
+      if (!imageLoad.value && !imageLoad.value.width) return;
       const context = canvas.value.getContext("2d");
       context.clearRect(0, 0, canvas.value.width, canvas.value.height);
+      context.lineWidth = lineWidth.value;
 
       const imgWidthCount = canvas.value.width / imageLoad.value.width;
       const imgHeightCount = canvas.value.height / imageLoad.value.height;
       imgCanvasSizeCount.value =
         imgWidthCount < imgHeightCount ? imgWidthCount : imgHeightCount;
 
+      emit("setImgCanvasSizeCount", imgCanvasSizeCount.value);
+
+      // [(163, 425), (173, 445)]
+      // [(161, 425), (176, 443)]
       emit("setCanvasSize", {
         width: imageLoad.value.width * imgCanvasSizeCount.value,
         height: imageLoad.value.height * imgCanvasSizeCount.value,
@@ -186,6 +223,9 @@ export default {
       );
 
       for (let i = 0; i < rectList.value.length; i++) {
+        if (!rectList.value[i].checked) {
+          continue;
+        }
         const { color, S_X, S_Y, E_X, E_Y, id } = rectList.value[i];
         if (grabUpdatePoint.value === id) {
           continue;
@@ -195,7 +235,7 @@ export default {
       }
 
       if (!_.isEmpty(targetBox.value)) {
-        if (grabUpdatePoint.value === null) {
+        if (grabUpdatePoint.value === null && targetBox.value.checked) {
           const { color, S_X, S_Y, E_X, E_Y, id } = targetBox.value;
           context.strokeStyle = color;
           context.strokeRect(S_X, S_Y, E_X - S_X, E_Y - S_Y);
@@ -209,6 +249,17 @@ export default {
       imageLoad.value = new Image();
       imageLoad.value.src = imgSrc;
       imageLoad.value.onload = () => {
+        canvas.value.width = 935;
+        canvas.value.height = 550;
+
+        const imgWidthCount = canvas.value.width / imageLoad.value.width;
+        const imgHeightCount = canvas.value.height / imageLoad.value.height;
+        imgCanvasSizeCount.value =
+          imgWidthCount < imgHeightCount ? imgWidthCount : imgHeightCount;
+
+        canvas.value.width = imageLoad.value.width * imgCanvasSizeCount.value;
+        canvas.value.height = imageLoad.value.height * imgCanvasSizeCount.value;
+
         ImagePrinting();
       };
     }
@@ -246,12 +297,18 @@ export default {
       return data < 0 ? 0 : data;
     }
 
+    const lineWidth = ref(5);
+
+    watch(lineWidth, () => {
+      ImagePrinting();
+    });
+
     // 그리자!
     function startDraw(event) {
       end_x.value = canvasX(event.clientX);
       end_y.value = canvasY(event.clientY);
       const context = canvas.value.getContext("2d");
-      context.lineWidth = 10;
+      context.lineWidth = lineWidth.value;
       ImagePrinting();
       if (targetUpdateColor.value) {
         context.strokeStyle = targetUpdateColor.value;
@@ -367,7 +424,6 @@ export default {
       const x = start_x.value;
       const y = start_y.value;
       const targetItemIndex = findMoveBoxTarget(x, y);
-      console.log(targetItemIndex);
       if (targetItemIndex !== null) {
         targetMoveIndex.value = targetItemIndex;
       }
@@ -413,8 +469,6 @@ export default {
         }
         start_x.value = canvasX(event.clientX);
         start_y.value = canvasY(event.clientY);
-        const x = start_x.value;
-        const y = start_y.value;
         isStartDraw.value = true;
       }
     }
@@ -645,6 +699,10 @@ export default {
       getByteSize,
       isgrabUpdatePoint,
       userPointer,
+      handleFile,
+      lineWidth,
+      imageLoad,
+      imgCanvasSizeCount,
     };
   },
 };

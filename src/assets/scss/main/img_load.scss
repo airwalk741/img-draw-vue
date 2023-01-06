@@ -21,8 +21,34 @@ $defultheight: 550px;
     width: 150px;
   }
   canvas {
+    display: block;
+    // width: 100%;
+    // height: 100%;
+  }
+  $dropHeight: 200px;
+  .upload-img-container {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    height: 100%;
+    height: calc(#{$defultheight} - #{3rem});
+    min-height: $defultheight;
+    position: relative;
+    .upload-img {
+      max-width: 80px;
+    }
+    label {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      z-index: 1000;
+      cursor: pointer;
+      margin: 0;
+    }
   }
 }
 

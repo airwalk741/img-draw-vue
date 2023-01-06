@@ -11,6 +11,7 @@
         :box="targetBox"
         @setCanvasSize="setCanvasSize"
         :canvasSize="canvasSize"
+        @setImgCanvasSizeCount="setImgCanvasSizeCount"
       />
     </div>
     <!-- <LabelCardList
@@ -27,6 +28,8 @@
         @selectBox="selectBox"
         @changeColor="changeColor"
         :canvasSize="canvasSize"
+        :imgCanvasSizeCount="imgCanvasSizeCount"
+        @changeChecker="changeChecker"
       />
     </div>
   </div>
@@ -68,7 +71,14 @@ export default {
     };
 
     const addRect = (data) => {
-      rectList.value = [...rectList.value, data];
+      rectList.value = [
+        ...rectList.value,
+        {
+          ...data,
+          checked: true,
+          id: new Date().getTime(),
+        },
+      ];
       targetBox.value = {};
     };
 
@@ -89,7 +99,10 @@ export default {
     const updateRect = (id, data) => {
       rectList.value = rectList.value.map((item) => {
         if (item.id === id) {
-          return data;
+          return {
+            ...item,
+            ...data,
+          };
         } else {
           return item;
         }
@@ -105,6 +118,7 @@ export default {
       targetBox.value = _.find(rectList.value, { id: id });
     };
 
+    // 색 변환
     const changeColor = (id, color) => {
       rectList.value = rectList.value.map((item) => {
         if (item.id === id) {
@@ -123,6 +137,25 @@ export default {
       }
     };
 
+    // canvas 크기
+    const imgCanvasSizeCount = ref(1);
+    const setImgCanvasSizeCount = (data) => {
+      imgCanvasSizeCount.value = data;
+    };
+
+    // 체크박스
+    const changeChecker = (data, checked) => {
+      rectList.value = rectList.value.map((item) => {
+        if (item.id === data.id) {
+          return {
+            ...item,
+            checked,
+          };
+        }
+        return item;
+      });
+    };
+
     return {
       rectList,
       addRect,
@@ -134,6 +167,10 @@ export default {
       changeColor,
       setCanvasSize,
       canvasSize,
+      setImgCanvasSizeCount,
+
+      imgCanvasSizeCount,
+      changeChecker,
     };
   },
 };

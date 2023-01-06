@@ -8,17 +8,17 @@
         >All Cocy</a-button
       >
       <a-button
-        v-if="!isPixel"
+        v-if="isPixel"
         type="primary"
         style="margin-right: 10px; font-weight: bolder"
-        @click="setIsPixel(true)"
+        @click="setIsPixel(false)"
         >Pixel</a-button
       >
       <a-button
         v-else
         type="primary"
         style="font-weight: bolder"
-        @click="setIsPixel(false)"
+        @click="setIsPixel(true)"
       >
         Relative
       </a-button>
@@ -26,7 +26,7 @@
     <!-- <a-table :dataSource="dataSource" :columns="columns" /> -->
     <div class="table-container" ref="tableRef">
       <table>
-        <th>No.</th>
+        <th></th>
         <th>Start X</th>
         <th>Start Y</th>
         <th>End X</th>
@@ -36,19 +36,33 @@
         <tr
           v-for="(item, index) in rectList"
           :key="index"
-          @click="selectBox(item.id)"
+          @click="selectBox(item)"
         >
-          <td>{{ index + 1 }}.</td>
-          <td v-if="isPixel">{{ item.S_X.toFixed(2) }}</td>
+          <!-- <td>{{ index + 1 }}.</td> -->
+          <td>
+            <a-checkbox
+              v-model:checked="item.checked"
+              @change="(e) => changeChecker(item, e.target.checked)"
+            ></a-checkbox>
+          </td>
+          <td v-if="isPixel">
+            {{ Math.round(item.S_X / imgCanvasSizeCount) }}
+          </td>
           <td v-else>{{ (item.S_X / canvasWidth).toFixed(5) }}</td>
 
-          <td v-if="isPixel">{{ item.S_Y.toFixed(2) }}</td>
+          <td v-if="isPixel">
+            {{ Math.round(item.S_Y / imgCanvasSizeCount) }}
+          </td>
           <td v-else>{{ (item.S_Y / canvasHeight).toFixed(5) }}</td>
 
-          <td v-if="isPixel">{{ item.E_X.toFixed(2) }}</td>
+          <td v-if="isPixel">
+            {{ Math.round(item.E_X / imgCanvasSizeCount) }}
+          </td>
           <td v-else>{{ (item.E_X / canvasWidth).toFixed(5) }}</td>
 
-          <td v-if="isPixel">{{ item.E_Y.toFixed(2) }}</td>
+          <td v-if="isPixel">
+            {{ Math.round(item.E_Y / imgCanvasSizeCount) }}
+          </td>
           <td v-else>{{ (item.E_Y / canvasHeight).toFixed(5) }}</td>
           <td>
             <input
@@ -79,8 +93,11 @@ export default {
     canvasSize: {
       type: Object,
     },
+    imgCanvasSizeCount: {
+      type: Number,
+    },
   },
-  emits: ["removeRect", "selectBox", "changeColor"],
+  emits: ["removeRect", "selectBox", "changeColor", "changeChecker"],
 
   setup(props, { emit }) {
     const rectList = computed(() => props.myList);
@@ -105,8 +122,9 @@ export default {
       emit("removeRect", id);
     };
 
-    const selectBox = (id) => {
-      emit("selectBox", id);
+    const selectBox = (item) => {
+      if (!item.checked) return;
+      emit("selectBox", item.id);
     };
 
     const changeColor = (id, event) => {
@@ -115,16 +133,25 @@ export default {
     };
 
     const handleCopy = (item) => {
-      const { S_X, S_Y, E_X, E_Y } = item;
+      let { S_X, S_Y, E_X, E_Y } = item;
       const textarea = document.createElement("textarea");
       document.body.appendChild(textarea);
 
       if (isPixel.value) {
-        textarea.value = `${S_X}, ${S_Y}, ${E_X}, ${E_Y}`;
+        S_X /= props.imgCanvasSizeCount;
+        S_Y /= props.imgCanvasSizeCount;
+        E_X /= props.imgCanvasSizeCount;
+        E_Y /= props.imgCanvasSizeCount;
+      }
+
+      if (isPixel.value) {
+        textarea.value = `[(${Math.round(S_X)}, ${Math.round(
+          S_Y
+        )}), (${Math.round(E_X)}, ${Math.round(E_Y)})]`;
       } else {
-        textarea.value = `${S_X / canvasWidth.value}, ${
+        textarea.value = `[(${S_X / canvasWidth.value}, ${
           S_Y / canvasHeight.value
-        }, ${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value}`;
+        }), (${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value})]`;
       }
 
       textarea.select();
@@ -138,14 +165,23 @@ export default {
       textarea.value = "";
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        const { S_X, S_Y, E_X, E_Y } = item;
+        let { S_X, S_Y, E_X, E_Y } = item;
 
         if (isPixel.value) {
-          textarea.value += `${S_X}, ${S_Y}, ${E_X}, ${E_Y}`;
+          S_X /= props.imgCanvasSizeCount;
+          S_Y /= props.imgCanvasSizeCount;
+          E_X /= props.imgCanvasSizeCount;
+          E_Y /= props.imgCanvasSizeCount;
+        }
+
+        if (isPixel.value) {
+          textarea.value += `[(${Math.round(S_X)}, ${Math.round(
+            S_Y
+          )}), (${Math.round(E_X)}, ${Math.round(E_Y)})]`;
         } else {
-          textarea.value += `${S_X / canvasWidth.value}, ${
+          textarea.value += `[(${S_X / canvasWidth.value}, ${
             S_Y / canvasHeight.value
-          }, ${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value}`;
+          }), (${E_X / canvasWidth.value}, ${E_Y / canvasHeight.value})]`;
         }
 
         if (i !== rectList.value.length - 1) {
@@ -156,6 +192,10 @@ export default {
       textarea.select();
       document.execCommand("copy");
       document.body.removeChild(textarea);
+    };
+
+    const changeChecker = (item, checked) => {
+      emit("changeChecker", item, checked);
     };
 
     return {
@@ -170,6 +210,7 @@ export default {
       canvasHeight,
       canvasWidth,
       ALlHandleCopy,
+      changeChecker,
     };
   },
 };
