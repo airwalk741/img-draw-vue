@@ -2,6 +2,13 @@
   <div class="container">
     <div class="btn-container">
       <a-button
+        style="margin-right: 10px; font-weight: bolder"
+        type="primary"
+        @click="showModal"
+        :disabled="!isFile"
+        >Input Label</a-button
+      >
+      <a-button
         type="primary"
         style="margin-right: 10px; font-weight: bolder"
         @click="ALlHandleCopy"
@@ -96,8 +103,17 @@ export default {
     imgCanvasSizeCount: {
       type: Number,
     },
+    isFile: {
+      type: Boolean,
+    },
   },
-  emits: ["removeRect", "selectBox", "changeColor", "changeChecker"],
+  emits: [
+    "removeRect",
+    "selectBox",
+    "changeColor",
+    "changeChecker",
+    "showModal",
+  ],
 
   setup(props, { emit }) {
     const rectList = computed(() => props.myList);
@@ -198,6 +214,10 @@ export default {
       emit("changeChecker", item, checked);
     };
 
+    const showModal = () => {
+      emit("showModal");
+    };
+
     return {
       isPixel,
       setIsPixel,
@@ -211,6 +231,7 @@ export default {
       canvasWidth,
       ALlHandleCopy,
       changeChecker,
+      showModal,
     };
   },
 };

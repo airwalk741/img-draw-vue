@@ -12,6 +12,7 @@
         @setCanvasSize="setCanvasSize"
         :canvasSize="canvasSize"
         @setImgCanvasSizeCount="setImgCanvasSizeCount"
+        @setisFile="setisFile"
       />
     </div>
     <!-- <LabelCardList
@@ -30,8 +31,16 @@
         :canvasSize="canvasSize"
         :imgCanvasSizeCount="imgCanvasSizeCount"
         @changeChecker="changeChecker"
+        @showModal="showModal"
+        :isFile="isFile"
       />
     </div>
+    <TextInputModal
+      :isModal="isModal"
+      @handleOk="handleOk"
+      @handlecancel="handlecancel"
+      :imgCanvasSizeCount="imgCanvasSizeCount"
+    />
   </div>
 </template>
 
@@ -39,6 +48,7 @@
 import { ref, watch } from "vue";
 import ImageLoad from "./components/ImageLoad.vue";
 import LabelCardList from "./components/LabelCardList.vue";
+import TextInputModal from "./components/TextInputModal.vue";
 
 import _ from "lodash";
 import LabelTable from "./components/LabelTable.vue";
@@ -52,6 +62,7 @@ export default {
     ImageLoad,
     // LabelCardList,
     LabelTable,
+    TextInputModal,
   },
 
   setup() {
@@ -79,6 +90,7 @@ export default {
           id: new Date().getTime(),
         },
       ];
+      console.log(rectList.value);
       targetBox.value = {};
     };
 
@@ -156,6 +168,29 @@ export default {
       });
     };
 
+    // 모달 열기
+    const isFile = ref(false);
+    const setisFile = () => {
+      isFile.value = true;
+    };
+    const isModal = ref(false);
+    const showModal = () => {
+      isModal.value = true;
+    };
+
+    // 모달 닫기
+    const handlecancel = () => {
+      // console.log(dataList);
+
+      // isModal.value = false;
+      isModal.value = false;
+    };
+
+    const handleOk = (dataList) => {
+      rectList.value = [...rectList.value, ...dataList];
+      isModal.value = false;
+    };
+
     return {
       rectList,
       addRect,
@@ -168,9 +203,15 @@ export default {
       setCanvasSize,
       canvasSize,
       setImgCanvasSizeCount,
-
       imgCanvasSizeCount,
       changeChecker,
+      showModal,
+      isModal,
+      handleOk,
+      handlecancel,
+      setisFile,
+
+      isFile,
     };
   },
 };

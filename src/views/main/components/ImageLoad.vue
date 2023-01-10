@@ -139,6 +139,7 @@ export default {
     "selectBox",
     "setCanvasSize",
     "setImgCanvasSizeCount",
+    "setisFile",
   ],
   setup(props, { emit }) {
     let rectList = computed(() => props.myList);
@@ -181,12 +182,14 @@ export default {
     function handleFile(e) {
       const file = e.target.files[0];
       targetFile.value = file;
+      emit("setisFile");
     }
 
     function onDrop(event) {
       clearRect();
       const items = event.dataTransfer.files;
       targetFile.value = items[0];
+      emit("setisFile");
     }
 
     //
@@ -297,7 +300,7 @@ export default {
       return data < 0 ? 0 : data;
     }
 
-    const lineWidth = ref(5);
+    const lineWidth = ref(2);
 
     watch(lineWidth, () => {
       ImagePrinting();
@@ -419,14 +422,17 @@ export default {
 
     // 클릭 했을 때 움직이는 박스일까?
     function findMoveBox(event) {
-      start_x.value = canvasX(event.clientX);
-      start_y.value = canvasY(event.clientY);
-      const x = start_x.value;
-      const y = start_y.value;
+      const x = canvasX(event.clientX);
+      const y = canvasY(event.clientY);
       const targetItemIndex = findMoveBoxTarget(x, y);
+      console.log(targetItemIndex);
       if (targetItemIndex !== null) {
+        start_x.value = canvasX(event.clientX);
+        start_y.value = canvasY(event.clientY);
         targetMoveIndex.value = targetItemIndex;
+        return true;
       }
+      return false;
     }
 
     watch(ishandleBtn, () => {
@@ -465,6 +471,12 @@ export default {
         findMoveBox(event);
       } else {
         if (clickUpdateBox(event)) {
+          return;
+        }
+        if (!wcode.value) {
+          if (findMoveBox(event)) {
+            ishandleBtn.value = true;
+          }
           return;
         }
         start_x.value = canvasX(event.clientX);
@@ -524,8 +536,13 @@ export default {
           isgrabUpdatePoint.value = `url(${penImg}), auto`;
           grabUpdatePoint.value = null;
         } else {
-          emit("addRect", data);
-          colorIndex += 1;
+          if (wcode.value) {
+            emit("addRect", data);
+            colorIndex += 1;
+            if (colorIndex > 500) {
+              colorIndex = 0;
+            }
+          }
         }
 
         start_x.value = -1;
@@ -551,11 +568,25 @@ export default {
 
     // 모서리 잡기
     function pointerGrab(x, y, target_x, target_y) {
-      if (target_x - 10 <= x && x <= target_x + 10) {
-        if (target_y - 10 <= y && y <= target_y + 10) {
+      if (wcode.value) return false;
+      // const value = (2 * imageLoad.value.width) / canvas.value.width;
+      const value = 5;
+
+      if (target_x - value <= x && x <= target_x + value) {
+        if (target_y - value <= y && y <= target_y + value) {
+          const context = canvas.value.getContext("2d");
+          context.lineWidth = lineWidth.value;
+          context.fillStyle = "red";
+          context.fillRect(
+            target_x - value,
+            target_y - value,
+            value + value,
+            value + value
+          );
           return true;
         }
       }
+      ImagePrinting();
       return false;
     }
 
@@ -609,6 +640,9 @@ export default {
         }
       }
       isgrabUpdatePoint.value = `url(${penImg}), auto`;
+      if (!wcode.value) {
+        isgrabUpdatePoint.value = "pointer";
+      }
       return false;
     }
 
@@ -679,8 +713,34 @@ export default {
 
     window.addEventListener("mouseup", () => {
       if (ishandleBtn.value || isStartDraw.value) {
+        ishandleBtn.value = false;
         mouseup();
       }
+    });
+
+    const wcode = ref(false);
+
+    watch(wcode, () => {
+      if (!wcode.value) {
+        isgrabUpdatePoint.value = "pointer";
+      } else {
+        isgrabUpdatePoint.value = `url(${penImg}), auto`;
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      const { keyCode } = e;
+      if (keyCode === 87) {
+        ImagePrinting();
+        wcode.value = true;
+      } else if (keyCode === 27) {
+        ImagePrinting();
+        wcode.value = false;
+      }
+    });
+
+    watch(ishandleBtn, () => {
+      wcode.value = false;
     });
 
     return {
