@@ -95,6 +95,7 @@ export default {
         index++;
       }
       emit("handleOk", dataList);
+      textValue.value = "";
     };
 
     const handlecancel = () => {

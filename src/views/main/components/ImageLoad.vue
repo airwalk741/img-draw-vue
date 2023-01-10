@@ -639,9 +639,10 @@ export default {
           return true;
         }
       }
-      isgrabUpdatePoint.value = `url(${penImg}), auto`;
       if (!wcode.value) {
         isgrabUpdatePoint.value = "pointer";
+      } else {
+        isgrabUpdatePoint.value = `url(${penImg}), auto`;
       }
       return false;
     }
@@ -695,7 +696,11 @@ export default {
           return true;
         }
       }
-      isgrabUpdatePoint.value = `url(${penImg}), auto`;
+      if (!wcode.value) {
+        isgrabUpdatePoint.value = "pointer";
+      } else {
+        isgrabUpdatePoint.value = `url(${penImg}), auto`;
+      }
       grabUpdatePoint.value = null;
       return false;
     }
