@@ -26,21 +26,6 @@
           style="margin-right: 10px"
           >Clear</a-button
         >
-        <a-button
-          v-if="!ishandleBtn"
-          type="primary"
-          :disabled="!targetFile"
-          @click="setIsHandleBtn(true)"
-          ><i class="far fa-hand-paper"></i
-        ></a-button>
-
-        <a-button
-          v-else
-          type="primary"
-          :disabled="!targetFile"
-          @click="setIsHandleBtn(false)"
-          ><i class="fas fa-pencil-alt"></i
-        ></a-button>
       </div>
     </div>
 
@@ -195,6 +180,8 @@ export default {
     //
     let colorIndex = 0;
     const imgCanvasSizeCount = ref(1);
+
+    // 그리기
     function ImagePrinting() {
       if (!imageLoad.value && !imageLoad.value.width) return;
       const context = canvas.value.getContext("2d");
@@ -341,7 +328,9 @@ export default {
     function findMoveBoxTarget(x, y) {
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        let { color, S_X, S_Y, E_X, E_Y, id } = item;
+        let { color, S_X, S_Y, E_X, E_Y, id, checked } = item;
+
+        if (!checked) continue;
 
         let [a, b] = bigValue(S_X, E_X);
 
@@ -600,7 +589,9 @@ export default {
 
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        let { color, S_X, S_Y, E_X, E_Y, id } = item;
+        let { color, S_X, S_Y, E_X, E_Y, id, checked } = item;
+
+        if (!checked) continue;
 
         let [a, b] = bigValue(S_X, E_X);
 
@@ -653,7 +644,8 @@ export default {
 
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
-        const { color, S_X, S_Y, E_X, E_Y, id } = item;
+        const { color, S_X, S_Y, E_X, E_Y, id, checked } = item;
+        if (!checked) continue;
 
         // 좌상
         const leftHeight = pointerGrab(x, y, S_X, S_Y);
