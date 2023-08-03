@@ -15,13 +15,6 @@
         @setisFile="setisFile"
       />
     </div>
-    <!-- <LabelCardList
-      :myList="rectList"
-      @removeRect="removeRect"
-      @selectBox="selectBox"
-      @changeColor="changeColor"
-      :canvasSize="canvasSize"
-    /> -->
     <div class="table">
       <LabelTable
         :myList="rectList"
@@ -47,20 +40,14 @@
 <script>
 import { ref, watch } from "vue";
 import ImageLoad from "./components/ImageLoad.vue";
-import LabelCardList from "./components/LabelCardList.vue";
-import TextInputModal from "./components/TextInputModal.vue";
+import TextInputModal from "./components/TextInputModal";
 
 import _ from "lodash";
 import LabelTable from "./components/LabelTable.vue";
 
-// rectList = [
-//   startX, startY, 가로길이, 세로길이
-// ]
-
 export default {
   components: {
     ImageLoad,
-    // LabelCardList,
     LabelTable,
     TextInputModal,
   },
@@ -68,9 +55,6 @@ export default {
   setup() {
     const rectList = ref([]);
     const targetBox = ref({});
-    // watch(targetBox, () => {
-    //   targetBox.value = {};
-    // });
 
     const canvasSize = ref({
       width: 0,
@@ -81,6 +65,7 @@ export default {
       canvasSize.value = data;
     };
 
+    // rect 그리기
     const addRect = (data) => {
       rectList.value = [
         ...rectList.value,
@@ -90,15 +75,16 @@ export default {
           id: new Date().getTime(),
         },
       ];
-      console.log(rectList.value);
       targetBox.value = {};
     };
 
+    // rect 다 지우기
     const clearRect = () => {
       targetBox.value = {};
       rectList.value = [];
     };
 
+    // 특정 rect 삭제
     const removeRect = (target) => {
       if (!_.isEmpty(targetBox.value)) {
         if (targetBox.value.id === target.id) {
@@ -108,6 +94,7 @@ export default {
       rectList.value = rectList.value.filter((item) => item.id !== target.id);
     };
 
+    // rect 수정
     const updateRect = (id, data) => {
       rectList.value = rectList.value.map((item) => {
         if (item.id === id) {
@@ -180,9 +167,6 @@ export default {
 
     // 모달 닫기
     const handlecancel = () => {
-      // console.log(dataList);
-
-      // isModal.value = false;
       isModal.value = false;
     };
 

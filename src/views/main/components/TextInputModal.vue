@@ -44,7 +44,6 @@ export default {
     const store = useStore();
     const visible = computed(() => props.isModal);
     const colorList = computed(() => store.state.colorList);
-    // const colorList = c
 
     const exampleText = `[(256, 88), (339, 157)]
 [(137, 135), (249, 267)]

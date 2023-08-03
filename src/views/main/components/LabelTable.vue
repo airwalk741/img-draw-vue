@@ -144,7 +144,6 @@ export default {
     };
 
     const changeColor = (id, event) => {
-      // console.log();
       emit("changeColor", id, event.currentTarget.value);
     };
 

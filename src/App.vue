@@ -9,6 +9,9 @@ export default {
   setup() {
     const store = useStore();
 
+    /**
+     * 랜덤 색 만들기
+     */
     function getRandomColor() {
       var letters = "0123456789ABCDEF";
       var color = "#";
@@ -23,14 +26,7 @@ export default {
       for (let i = 0; i < 500; i++) {
         while (true) {
           /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
-
           const colorCode = getRandomColor();
-          // "#" + Math.round(Math.random() * 0xffffff).toString(16);
-
-          // const r = parseInt(Math.random() * 255);
-          // const g = parseInt(Math.random() * 255);
-          // const b = parseInt(Math.random() * 255);
-          // const candidate = `rgba(${r}, ${g}, ${b})`;
           if (!color.includes(colorCode)) {
             color.push(colorCode);
             break;
