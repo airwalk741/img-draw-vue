@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Image Draw
 
 > node: v16.19.0
@@ -87,3 +88,34 @@
 
 
 
+=======
+# Pointer
+
+> npm v8.19.4
+>
+> node v16.15.1
+>
+> Vue.js 3.xx
+
+1. 라이브러리 설치
+
+```bash
+npm install or npm i
+```
+
+2. 실행
+
+```bash
+npm run serve
+```
+
+3. 구조
+
+![image-20240812154351872](README.assets/image-20240812154351872.png)
+
+- 주요 로직은 views에서 진행
+  - App.vue: 진입점
+  - Main.vue: UI root
+  - ImageLoad.vue : 이미지 로드 및 Canvas 관련
+  - LabelTable.vue: 좌표 관련
+>>>>>>> 77abfcf (last)

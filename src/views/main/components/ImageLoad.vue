@@ -266,11 +266,9 @@ export default {
     // x 좌표
     function canvasX(clientX) {
       const bound = canvas.value.getBoundingClientRect();
-      const bw = 0; // 임시
 
       const data =
-        (clientX - bound.left - bw) *
-        (canvas.value.width / (bound.width - bw * 2));
+        (clientX - bound.left) * (canvas.value.width / (bound.width * 2));
 
       return data < 0 ? 0 : data;
     }
@@ -278,11 +276,9 @@ export default {
     // y 좌표
     function canvasY(clientY) {
       const bound = canvas.value.getBoundingClientRect();
-      const bw = 0; // 임시
 
       const data =
-        (clientY - bound.top - bw) *
-        (canvas.value.height / (bound.height - bw * 2));
+        (clientY - bound.top) * (canvas.value.height / (bound.height * 2));
 
       return data < 0 ? 0 : data;
     }
@@ -295,8 +291,10 @@ export default {
 
     // 그리자!
     function startDraw(event) {
-      end_x.value = canvasX(event.clientX);
-      end_y.value = canvasY(event.clientY);
+      // end_x.value = canvasX(event.clientX);
+      // end_y.value = canvasY(event.clientY);
+      end_x.value = event.offsetX;
+      end_y.value = event.offsetY;
       const context = canvas.value.getContext("2d");
       context.lineWidth = lineWidth.value;
       ImagePrinting();
@@ -353,8 +351,10 @@ export default {
 
     // 움직이자!
     function moveBox(event) {
-      const end_x = canvasX(event.clientX);
-      const end_y = canvasY(event.clientY);
+      // const end_x = canvasX(event.clientX);
+      // const end_y = canvasY(event.clientY);
+      const end_x = event.offsetX;
+      const end_y = event.offsetY;
       const target = _.find(rectList.value, { id: targetMoveIndex.value });
 
       const newData = _.cloneDeep(target);
@@ -411,13 +411,17 @@ export default {
 
     // 클릭 했을 때 움직이는 박스일까?
     function findMoveBox(event) {
-      const x = canvasX(event.clientX);
-      const y = canvasY(event.clientY);
+      // const x = canvasX(event.clientX);
+      // const y = canvasY(event.clientY);
+      const x = event.offsetX;
+      const y = event.offsetY;
       const targetItemIndex = findMoveBoxTarget(x, y);
       console.log(targetItemIndex);
       if (targetItemIndex !== null) {
-        start_x.value = canvasX(event.clientX);
-        start_y.value = canvasY(event.clientY);
+        // start_x.value = canvasX(event.clientX);
+        // start_y.value = canvasY(event.clientY);
+        start_x.value = event.offsetX;
+        start_y.value = event.offsetY;
         targetMoveIndex.value = targetItemIndex;
         return true;
       }
@@ -436,8 +440,12 @@ export default {
     });
 
     function mousemove(event) {
-      userPointer.value.x = canvasX(event.clientX);
-      userPointer.value.y = canvasY(event.clientY);
+      console.log(event.clientX);
+
+      // userPointer.value.x = canvasX(event.clientX);
+      // userPointer.value.y = canvasY(event.clientY);
+      userPointer.value.x = event.offsetX;
+      userPointer.value.y = event.offsetY;
 
       if (ishandleBtn.value) {
         if (targetMoveIndex.value !== null) {
@@ -468,8 +476,10 @@ export default {
           }
           return;
         }
-        start_x.value = canvasX(event.clientX);
-        start_y.value = canvasY(event.clientY);
+        // start_x.value = canvasX(event.clientX);
+        // start_y.value = canvasY(event.clientY);
+        start_x.value = event.offsetX;
+        start_y.value = event.offsetY;
         isStartDraw.value = true;
       }
     }
@@ -584,8 +594,10 @@ export default {
     const targetUpdateColor = ref(false);
 
     function hoverEdgePointer(event) {
-      const x = canvasX(event.clientX);
-      const y = canvasY(event.clientY);
+      // const x = canvasX(event.clientX);
+      // const y = canvasY(event.clientY);
+      const x = event.offsetX;
+      const y = event.offsetY;
 
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
@@ -639,8 +651,10 @@ export default {
     }
 
     function clickUpdateBox(event) {
-      const x = canvasX(event.clientX);
-      const y = canvasY(event.clientY);
+      // const x = canvasX(event.clientX);
+      // const y = canvasY(event.clientY);
+      const x = event.offsetX;
+      const y = event.offsetY;
 
       for (let i = 0; i < rectList.value.length; i++) {
         const item = rectList.value[i];
